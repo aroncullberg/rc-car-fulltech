@@ -3,6 +3,8 @@
 #include "freertos/task.h"
 #include "sbus.h"
 #include "esp_log.h"
+#include "DShotRMT.h"
+#include <algorithm>
 
 #ifndef TAG
 #define TAG "main"
@@ -12,8 +14,20 @@
 #define SBUS_TX_PIN GPIO_NUM_5
 #define SBUS_UART UART_NUM_1
 
+
+#define MOTOR_PIN GPIO_NUM_7
+#define THROTTLE_MIN 48
+#define THROTTLE_MAX 2047
+#define TARGET_THROTTLE_PERCENT 20
+#define RAMP_STEP_MS 100  // Time between throttle increases
+#define POLES 14  // Typical for many brushless motors, adjust if different
+
+// Calculate target throttle (20%)
+static const uint16_t TARGET_THROTTLE = THROTTLE_MIN + ((THROTTLE_MAX - THROTTLE_MIN) * TARGET_THROTTLE_PERCENT / 100);
+
 // Global objects
 SBUS *sbus = nullptr;
+
 
 void sbus_read_task(void *pvParameters) {
     SBUS *sbus = (SBUS *)pvParameters;
@@ -35,6 +49,43 @@ void sbus_read_task(void *pvParameters) {
     }
 }
 
+void motor_control_task(void *pvParameters) {
+    // Create and initialize DShot driver
+    DShotRMT dshot(MOTOR_PIN, DSHOT600_BIDIRECTIONAL);
+    
+    ESP_LOGI(TAG, "Initializing DShot...");
+    dshot.begin();
+    
+    ESP_LOGI(TAG, "Armed. Starting throttle ramp...");
+    ESP_LOGI(TAG, "Target throttle: %d", TARGET_THROTTLE);
+    
+    uint16_t current_throttle = THROTTLE_MIN;
+    uint32_t erpm;
+    float rpm_ratio = DShotRMT::getErpmToRpmRatio(POLES);
+    
+    while (1) {
+        // Send current throttle value
+        dshot.sendThrottle(current_throttle);
+        
+        // Wait for and read telemetry
+        if (dshot.waitForErpm(erpm) == ESP_OK) {
+            if (erpm != 0xFFFF) { // Valid telemetry received
+                float rpm = erpm * rpm_ratio;
+                ESP_LOGI(TAG, "Throttle: %d, eRPM: %lu, RPM: %.2f", 
+                        current_throttle, erpm, rpm);
+            }
+        }
+        
+        // Increase throttle if not at target
+        if (current_throttle < TARGET_THROTTLE) {
+            current_throttle = std::min(static_cast<uint16_t>(current_throttle + 10), static_cast<uint16_t>(TARGET_THROTTLE));
+        }
+        
+        vTaskDelay(pdMS_TO_TICKS(RAMP_STEP_MS));
+    }
+}
+
+
 extern "C" void app_main(void) {
     ESP_LOGI(TAG, "Starting SBUS example");
 
@@ -47,7 +98,15 @@ extern "C" void app_main(void) {
     }
 
     // Increased stack size to 4096
-    xTaskCreate(sbus_read_task, "sbus_read", 4096, sbus, 5, NULL);
+    //xTaskCreate(sbus_read_task, "sbus_read", 4096, sbus, 5, NULL);
 
     ESP_LOGI(TAG, "SBUS initialization complete");
+
+    ESP_LOGI(TAG, "Starting DShot test application");
+    
+    // Create motor control task
+    xTaskCreate(motor_control_task, "motor_ctl", 4096, NULL, 5, NULL);
+    
+    ESP_LOGI(TAG, "Task created, system running");
+
 }
