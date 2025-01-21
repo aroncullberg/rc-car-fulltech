@@ -2,8 +2,7 @@ idf_component_register(
     SRCS 
         "main.cpp"
         "sbus.cpp"
-        "dshot_rmt_encoder.c"
-        "DShotRMT.cpp"
+        "dshot_esc_encoder.c"
     INCLUDE_DIRS 
         "include"
         "."
@@ -13,6 +12,7 @@ idf_component_register(
         "freertos"    # For FreeRTOS functionality
         "nvs_flash"   # For NVS initialization
         "hal"         # Hardware Abstraction Layer for GPIO
+        "esp_driver_rmt" # For RMT driver
 
 )
 
