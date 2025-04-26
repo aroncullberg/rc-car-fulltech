@@ -7,15 +7,16 @@ idf_component_register(
         "esp_timer"
         "freertos"
         "data_pool"
-        "SBUS"
         "GPS"
         "imu"
-        "vdc"
+#        "vdc"
         "log_monitor"
         "servo"
         "ConfigManager"
         "nvs_flash"
         "driver"
+        "rc"
+        "proto_sbus"
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE 

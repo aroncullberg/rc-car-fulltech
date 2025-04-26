@@ -4,7 +4,6 @@ idf_component_register(
     INCLUDE_DIRS 
         "."
     REQUIRES
-        "SBUS"
         "imu"
         "GPS"
         "shared"

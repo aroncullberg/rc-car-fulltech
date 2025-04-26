@@ -1,7 +1,7 @@
 idf_component_register(
     SRCS 
-       "vdc.cpp"
-       "PID.cpp"
+#       "vdc.cpp"
+#       "PID.cpp"
     INCLUDE_DIRS
         "."
     REQUIRES         

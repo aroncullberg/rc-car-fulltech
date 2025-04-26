@@ -141,7 +141,7 @@ void Servo::updateFromConfig() {
 
 
 
-uint32_t Servo::calculateCompareValue(const sensor::channel_t position) {
+uint32_t Servo::calculateCompareValue(const int16_t position) {
     if (position > 2000) {
         ESP_LOGW(TAG, "Position out of range: %u setting servo to FAILSAFE_POSITION", position);
         return std::clamp(sensor::Servo::FAILSAFE_POSITION + static_cast<uint32_t>(offset_),
@@ -177,7 +177,7 @@ uint32_t Servo::calculateCompareValue(const sensor::channel_t position) {
     return std::clamp(pulse_width, static_cast<uint32_t>(config_.min_pulse_width_us), static_cast<uint32_t>(config_.max_pulse_width_us));
 }
 
-esp_err_t Servo::setPosition(const sensor::channel_t position)  {
+esp_err_t Servo::setPosition(const int16_t position)  {
     // // print every tenth call
     // static uint32_t call_count = 0;
     // if (call_count++ % 10 == 0) {

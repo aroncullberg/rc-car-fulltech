@@ -26,11 +26,11 @@ public:
     Servo(const Servo&) = delete;
     Servo& operator=(const Servo&) = delete;
 
-    esp_err_t setPosition(sensor::channel_t position);
+    esp_err_t setPosition(int16_t position);
 
 private:
     esp_err_t init();
-    uint32_t calculateCompareValue(sensor::channel_t position) ;
+    uint32_t calculateCompareValue(int16_t position) ;
 
     Config config_;
     mcpwm_timer_handle_t timer_{nullptr};

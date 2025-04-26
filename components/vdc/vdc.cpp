@@ -234,9 +234,9 @@ void VehicleDynamicsController::steeringTask(void* arg) {
     // ESP_LOGI(TAG, "Test max turn rate: %f", controller->max_turn_rate_);
 
     const VehicleData& vehicle_data = VehicleData::instance();
-    constexpr auto ch_steering = static_cast<size_t>(sensor::SbusChannel::STEERING);
+    constexpr auto ch_steering = static_cast<size_t>(2);
     while (true) {
-        const sensor::SbusData& sbus_data = vehicle_data.getSbus();
+        // const sensor::SbusData& sbus_data = vehicle_data.getSbus();
         const sensor::ImuData& imu_data = vehicle_data.getImu();
         const sensor::channel_t steering_value = sbus_data.channels_scaled[ch_steering];
 

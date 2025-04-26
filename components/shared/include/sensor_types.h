@@ -1,88 +1,62 @@
 #pragma once
 
-#include <map>
-#include <algorithm>
 #include <array>
 
 namespace sensor
 {
-    /// @brief Common quality metrics for all sensors
-    struct SensorQuality {
-        bool valid_data{false}; // Indicates if data is valid
-        uint32_t error_count{0}; // Cumulative error counter
-        float update_rate_hz{0.0f}; // Current update rate in Hz
-    };
+    // struct SbusQuality {
+    //     uint8_t frame_loss_percent{0};
+    //     uint32_t error_count{0};
+    //     uint16_t frame_interval_ms{0};
+    //     bool valid_signal{false};
+    // };
+    //
+    // struct SbusData {
+    //     std::array<uint16_t, 16> channels_raw{};                // 11 bit values
+    //     std::array<rc::ChannelValue, 16> channels_scaled{};     // 0-2000 scaled values
+    //     SbusQuality quality{};
+    // };
 
-    enum class SbusChannelType : uint8_t {
-        SYMMETRIC = 0,
-        UNIPOLAR = 1,
-        BINARY = 2,
-        TRISTATE = 3,
-        NONE = 8,
-    };
+    //
+    // constexpr uint16_t RAW_MIN = 192;
+    // constexpr uint16_t RAW_MAX = 1792;
+    // constexpr uint16_t RAW_RANGE = RAW_MAX - RAW_MIN;
+    // constexpr channel_t SCALED_MIN = 0;
+    // constexpr channel_t SCALED_MAX = 2000;
 
+    // constexpr std::array<channel_t, RAW_RANGE + 1> createScaleLookupTable() {
+    //     std::array<int16_t, RAW_RANGE + 1> table{};
+    //
+    //     for (int16_t i = 0; i <= RAW_RANGE; ++i) {
+    //         // (i * SCALED_MAX + RAW_RANGE/2) / RAW_RANGE
+    //         table[i] = static_cast<uint16_t>((static_cast<uint32_t>(i) * SCALED_MAX + (RAW_RANGE / 2)) / RAW_RANGE);
+    //     }
+    //
+    //     return table;
+    // }
+    //
+    // constexpr auto SBUS_SCALE_TABLE = createScaleLookupTable();
 
-    enum class SbusChannel : uint8_t {
-        THROTTLE = 0,
-        STEERING = 1,
-        AUX1 = 2,
-        AUX2 = 3,
-        AUX3 = 4,
-        AUX4 = 5,
-        AUX5 = 6,
-        AUX6 = 7,
-        AUX7 = 8,
-        AUX8 = 9,
-        AUX9 = 10,
-        AUX10 = 11,
-        AUX11 = 12,
-        AUX12 = 13,
-        AUX13 = 14,
-        AUX14 = 15,
-        CHANNEL_COUNT = 16
-    };
+    // constexpr channel_t rawToScaled(const uint16_t raw_value) {
+    //     const uint16_t index = std::clamp(raw_value, RAW_MIN, RAW_MAX) - RAW_MIN;
+    //     return SBUS_SCALE_TABLE[index];
+    // }
 
-    using channel_t = int16_t;
-
-    constexpr uint16_t RAW_MIN = 192;
-    constexpr uint16_t RAW_MAX = 1792;
-    constexpr uint16_t RAW_RANGE = RAW_MAX - RAW_MIN;
-    constexpr channel_t SCALED_MIN = 0;
-    constexpr channel_t SCALED_MAX = 2000;
-
-    constexpr std::array<channel_t, RAW_RANGE + 1> createScaleLookupTable() {
-        std::array<int16_t, RAW_RANGE + 1> table{};
-
-        for (int16_t i = 0; i <= RAW_RANGE; ++i) {
-            // (i * SCALED_MAX + RAW_RANGE/2) / RAW_RANGE
-            table[i] = static_cast<uint16_t>((static_cast<uint32_t>(i) * SCALED_MAX + (RAW_RANGE / 2)) / RAW_RANGE);
-        }
-
-        return table;
-    }
-
-    constexpr auto SBUS_SCALE_TABLE = createScaleLookupTable();
-
-    constexpr channel_t rawToScaled(const uint16_t raw_value) {
-        const uint16_t index = std::clamp(raw_value, RAW_MIN, RAW_MAX) - RAW_MIN;
-        return SBUS_SCALE_TABLE[index];
-    }
-
-    struct SbusData {
-        uint16_t channels_raw[16]{1000};
-        // TODO: Make this use a custon type that is just a wrapper for uint16 so i can force functions to only accept channel value type.
-        channel_t channels_scaled[16]{1000};
-
-        // std::map<uint16_t, SbusChannel> channels;
-        struct {
-            uint8_t frame_loss_percent{0};
-            uint32_t error_count{0};
-            float frame_interval_ms{0.0f};
-            bool valid_signal{false};
-        } quality;
-
-        SbusData() = default;
-    };
+    // struct SbusData {
+    //     uint16_t channels_raw[16]{1000};
+    //     // TODO: Make this use a custon type that is just a wrapper for uint16 so i can force functions to only accept channel value type.
+    //     channel_t channels_scaled[16]{1000};
+    //
+    //     // std::map<uint16_t, SbusChannel> channels;
+    //     struct {
+    //         uint8_t frame_loss_percent{0};
+    //         uint32_t error_count{0};
+    //         float frame_interval_ms{0.0f};
+    //         bool valid_signal{false};
+    //     } quality;
+    //
+    //     SbusData() = default;
+    // };
 
     struct GpsData {
         int32_t latitude{0}; //  Degrees * 10^7
@@ -185,14 +159,14 @@ namespace sensor
 
     struct Servo {
         static constexpr uint32_t US_FAILSAFE = 1500;
-        static constexpr channel_t FAILSAFE_POSITION = 1000;
-        static constexpr channel_t MIN_POSITION = 0;
-        static constexpr channel_t MAX_POSITION = 2000;
-        static constexpr channel_t NEUTRAL_POSITION = 1000;
+        static constexpr int16_t FAILSAFE_POSITION = 1000;
+        static constexpr int16_t MIN_POSITION = 0;
+        static constexpr int16_t MAX_POSITION = 2000;
+        static constexpr int16_t NEUTRAL_POSITION = 1000;
     };
 
     struct Motor {
-        static constexpr channel_t FAILSAFE_THROTTLE = 0;
+        static constexpr int16_t FAILSAFE_THROTTLE = 0;
     };
 
 
@@ -218,6 +192,6 @@ namespace sensor
             uint16_t error_rate{0}; // TODO: need to decide on scale
         } rear_right;
 
-        channel_t throttle_value{0};
+        int16_t throttle_value{0};
     };
 } // Namespace sensor

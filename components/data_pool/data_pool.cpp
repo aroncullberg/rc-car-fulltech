@@ -3,11 +3,6 @@
 #include "freertos/task.h"
 
 
-void VehicleData::updateSBUS(const sensor::SbusData& data) {
-    sbus_ = data;
-    sbus_timestamp_.store(xTaskGetTickCount());
-}
-
 void VehicleData::updateGPS(const sensor::GpsData& data) {
     gps_ = data;
     gps_timestamp_.store(xTaskGetTickCount());
@@ -20,10 +15,6 @@ void VehicleData::updateIMU(const sensor::ImuData& data) {
 
 void VehicleData::updateErpm(const sensor::eRPMData& data) {
     eRPM_ = data;
-}
-
-sensor::SbusData VehicleData::getSbus() const {
-    return sbus_;
 }
 
 sensor::GpsData VehicleData::getGPS() const {

@@ -53,7 +53,7 @@ private:
     [[noreturn]] static void controllerTask(void* arg);
     [[noreturn]] static void steeringTask(void* arg);
 
-    esp_err_t updateThrottle(sensor::channel_t throttle_value);
+    esp_err_t updateThrottle(int16_t throttle_value);
 
     Config config_;
     Servo steering_servo_;
@@ -63,7 +63,7 @@ private:
 
 
 
-    void updateRPMTelemetry(sensor::channel_t throttle_value);
+    void updateRPMTelemetry(int16_t throttle_value);
 
     DShotRMT motor_fr_; // Front right
     DShotRMT motor_fl_; // Front left
