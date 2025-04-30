@@ -19,6 +19,8 @@ idf_component_register(
         "proto_sbus"
         "nav"
         "proto_nmea"
+        "proto_icm20948"
+        "motion"
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE 

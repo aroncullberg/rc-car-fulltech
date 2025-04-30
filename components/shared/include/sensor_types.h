@@ -58,47 +58,6 @@ namespace sensor
     //     SbusData() = default;
     // };
 
-    struct GpsData {
-        int32_t latitude{0}; //  Degrees * 10^7
-        int32_t longitude{0}; //  Degrees * 10^7
-        int32_t altitude_mm{0}; //  Altitude in milimeters
-
-        uint32_t speed_mmps{0}; //  Milimeters per second
-        uint32_t ground_course{0}; //  Course in degree * 10^2 (0-36000)
-        bool speed_valid{false};
-
-        struct {
-            uint8_t fix_type{0}; // 0 = no fix, 1 = 2D fix, 2 = 3D fix
-            uint8_t satellites{0};
-            uint8_t satellites_used{0};
-            uint16_t hdop{0}; //  Horizontal Dilution of Precision (HDOP) * 10
-        } quality;
-
-        union {
-            uint8_t flags{0};
-
-            struct {
-                uint8_t valid_fix : 1;
-                uint8_t north_south : 1;
-                uint8_t east_west : 1;
-                uint8_t reserved : 5;
-            } bits;
-        } status;
-
-        // NOTE: UTC-time
-        struct {
-            uint8_t hours{0};
-            uint8_t minutes{0};
-            uint8_t seconds{0};
-            uint16_t milliseconds{0};
-        } time;
-
-        GpsData() = default;
-    };
-
-
-
-
     struct ImuData {
         // Using GMP_4 which means the values are ... )TODO=
         int16_t accel_x{0}; // 1 unit = 1/80?? g // (positive) X is forwards movement

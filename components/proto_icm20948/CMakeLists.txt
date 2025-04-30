@@ -1,6 +1,6 @@
 idf_component_register(
     SRCS
-#        "icm_20948_driver.cpp"
+        "icm_20948_driver.cpp"
     INCLUDE_DIRS
         "include"
     REQUIRES
@@ -8,4 +8,6 @@ idf_component_register(
         "freertos"
         "esp_common"
         "motion"
+        "cr-icm20948"
 )
+

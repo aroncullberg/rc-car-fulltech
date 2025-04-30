@@ -30,7 +30,7 @@ namespace nav
         Gps &operator=(const Gps &) = delete;
 
     private:
-        friend class ::proto::NmeaDriver;
+        friend class proto::NmeaDriver;
         Gps() = default;
 
         void setLocation(const Location &l);
