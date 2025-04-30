@@ -6,7 +6,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "data_pool.h"
+// #include "data_pool.h"
 
 sensor::IMU::IMU(const Config &config) : config_(config) {
     config_callback_ = [this] { this->updateFromConfig(); };
@@ -500,14 +500,14 @@ void sensor::IMU::imuTask(void *parameters) {
                 //     instance->current_data_.quality.update_rate_hz = 1000.0f / interval;
                 // }
                 // last_wake_time = current_time;
-                instance->current_data_.bias.accel.x = VehicleData::instance().getImu().bias.accel.x;
-                instance->current_data_.bias.accel.y = VehicleData::instance().getImu().bias.accel.y;
-                instance->current_data_.bias.accel.z = VehicleData::instance().getImu().bias.accel.z;
-                instance->current_data_.bias.gyro.x = VehicleData::instance().getImu().bias.gyro.x;
-                instance->current_data_.bias.gyro.y = VehicleData::instance().getImu().bias.gyro.y;
-                instance->current_data_.bias.gyro.z = VehicleData::instance().getImu().bias.gyro.z;
+                // instance->current_data_.bias.accel.x = VehicleData::instance().getImu().bias.accel.x;
+                // instance->current_data_.bias.accel.y = VehicleData::instance().getImu().bias.accel.y;
+                // instance->current_data_.bias.accel.z = VehicleData::instance().getImu().bias.accel.z;
+                // instance->current_data_.bias.gyro.x = VehicleData::instance().getImu().bias.gyro.x;
+                // instance->current_data_.bias.gyro.y = VehicleData::instance().getImu().bias.gyro.y;
+                // instance->current_data_.bias.gyro.z = VehicleData::instance().getImu().bias.gyro.z;
 
-                VehicleData::instance().updateIMU(instance->current_data_);
+                // VehicleData::instance().updateIMU(instance->current_data_);
             }
         } else if (status == ICM_20948_STAT_ERR) {
             instance->current_data_.quality.error_count++;

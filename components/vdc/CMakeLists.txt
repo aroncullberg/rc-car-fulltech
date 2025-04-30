@@ -12,5 +12,5 @@ idf_component_register(
         "ConfigManager"
         "EscDriver"
         "shared"
-        "data_pool"
+#        "data_pool"
 )

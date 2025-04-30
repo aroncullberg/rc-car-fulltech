@@ -28,9 +28,4 @@ namespace rc
     void Receiver::update(ChannelIndex idx, ChannelValue value) {
         channels_[static_cast<size_t>(idx)].store(value, std::memory_order_relaxed);
     }
-
-
-
-
-
 }

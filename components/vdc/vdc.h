@@ -4,7 +4,7 @@
 #include "freertos/task.h"
 #include "esp_err.h"
 #include "servo.h"
-#include "data_pool.h"
+//#include "data_pool.h"
 #include "pid.h"
 #include "quaternion.h"
 #include "config_manager.h"

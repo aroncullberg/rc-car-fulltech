@@ -8,7 +8,6 @@
 #endif //PID_H
 
 #pragma once
-#pragma once
 
 #include <stdint.h>
 
