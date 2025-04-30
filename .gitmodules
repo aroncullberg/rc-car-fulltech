@@ -1,4 +1,4 @@
-[submodule "icm20948"]
+[submodule "components/proto_icm20948/cr-icm20948"]
 	path = components/proto_icm20948/cr-icm20948
 	url = https://github.com/aroncullberg/icm20948
 [submodule "components/GPS/tinygps-espidf"]
