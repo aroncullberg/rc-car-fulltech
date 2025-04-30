@@ -32,7 +32,7 @@ namespace proto
         explicit SbusDriver(const Config& cfg);
         ~SbusDriver();
 
-        esp_err_t init() const;
+        esp_err_t init();
         esp_err_t start();
         esp_err_t stop();
 
@@ -41,7 +41,7 @@ namespace proto
 
     private:
         /* === Internal helpers === */
-        esp_err_t configureUART() const;
+        esp_err_t configureUART();
         static void taskEntry(void *arg);
         void run();
         void processFrame(const uint8_t *frame, size_t length);
@@ -59,8 +59,8 @@ namespace proto
             return lut;
         }();
 
-        static constexpr uint16_t rawToScaled(uint16_t raw) {
-            uint16_t clamped = std::clamp(raw, RAW_MIN, RAW_MAX);
+        static constexpr rc::ChannelValue rawToScaled(const uint16_t raw) {
+            const uint16_t clamped = std::clamp(raw, RAW_MIN, RAW_MAX);
             return SCALE_LUT[clamped - RAW_MIN];
         }
 
@@ -68,12 +68,18 @@ namespace proto
         static constexpr size_t FRAME_SIZE = 25;
         static constexpr uint8_t START_BYTE = 0x0F;
         static constexpr uint8_t END_BYTE = 0x00;
+        static constexpr size_t WINDOW = 128;
 
         /* === members === */
         Config cfg_;
         TaskHandle_t task_{nullptr};
         bool running_{false};
-        QueueHandle_t* uart_event_queue_handle_{nullptr};
+        QueueHandle_t uart_evt_q_{nullptr};
+
+        std::atomic<uint32_t> total_frames_{0};
+        std::atomic<uint32_t> lost_frames_{0};
     };
 }
+
+
 

@@ -1,10 +1,10 @@
-idf_component_register(
-    SRCS 
-        "data_pool.cpp"
-    INCLUDE_DIRS 
-        "."
-    REQUIRES
-        "imu"
-        "GPS"
-        "shared"
-)
+#idf_component_register(
+#    SRCS
+#        "data_pool.cpp"
+#    INCLUDE_DIRS
+#        "."
+#    REQUIRES
+#        "imu"
+##        "GPS"
+#        "shared"
+#)

@@ -35,7 +35,7 @@ namespace rc
 
         void update(ChannelIndex idx, ChannelValue value);
 
-        friend class ::proto::SbusDriver;
+        friend class proto::SbusDriver;
 
         std::array<std::atomic<ChannelValue>, kChannelCount> channels_{};
     };

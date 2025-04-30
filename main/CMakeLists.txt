@@ -6,9 +6,9 @@ idf_component_register(
     REQUIRES         
         "esp_timer"
         "freertos"
-        "data_pool"
-        "GPS"
-        "imu"
+#        "data_pool"
+#        "GPS"
+#        "imu"
 #        "vdc"
         "log_monitor"
         "servo"
@@ -17,6 +17,8 @@ idf_component_register(
         "driver"
         "rc"
         "proto_sbus"
+        "nav"
+        "proto_nmea"
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE 
