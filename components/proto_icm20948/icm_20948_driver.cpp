@@ -280,10 +280,10 @@ esp_err_t Icm20948Driver::configureDmp() {
     // Value = (DMP running rate (225Hz) / ODR ) - 1
     // E.g. For a 25Hz ODR rate, value= (225/25) -1 = 8.
 
-    success &= inv_icm20948_set_dmp_sensor_period(&device_, DMP_ODR_Reg_Accel, 224) == ICM_20948_STAT_OK;
+    success &= inv_icm20948_set_dmp_sensor_period(&device_, DMP_ODR_Reg_Accel, 8) == ICM_20948_STAT_OK;
     success &= inv_icm20948_set_dmp_sensor_period(&device_, DMP_ODR_Reg_Gyro, 0) == ICM_20948_STAT_OK;
-    success &= inv_icm20948_set_dmp_sensor_period(&device_, DMP_ODR_Reg_Quat6, 224) == ICM_20948_STAT_OK;
-    success &= inv_icm20948_set_dmp_sensor_period(&device_, DMP_ODR_Reg_Quat9, 224) == ICM_20948_STAT_OK;
+    success &= inv_icm20948_set_dmp_sensor_period(&device_, DMP_ODR_Reg_Quat6, 8) == ICM_20948_STAT_OK;
+    success &= inv_icm20948_set_dmp_sensor_period(&device_, DMP_ODR_Reg_Quat9, 8) == ICM_20948_STAT_OK;
 
     uint16_t wm = 56;
     uint8_t wm_le[2] = {static_cast<uint8_t>(wm & 0xFF),

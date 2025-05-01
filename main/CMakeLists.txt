@@ -6,10 +6,6 @@ idf_component_register(
     REQUIRES         
         "esp_timer"
         "freertos"
-#        "data_pool"
-#        "GPS"
-#        "imu"
-#        "vdc"
         "log_monitor"
         "servo"
         "ConfigManager"

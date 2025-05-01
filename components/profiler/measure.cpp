@@ -4,6 +4,7 @@
 
 #include "measure.hpp"
 
+#include <algorithm>
 #include <sys/types.h>
 
 using namespace profiler;
@@ -32,7 +33,7 @@ void Measure::reset()
     total_time_us_ = 0;
     t0_ = 0;
     last_start_ = 0;
-    std::fill(std::begin(bins_), std::end(bins_), 0);
+    // std::fill(std::begin(bins_), std::end(bins_), 0);
 }
 
 uint32_t Measure::count() const

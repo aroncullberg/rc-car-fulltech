@@ -50,61 +50,63 @@ void printRunTimeStatsLight()
         const char* name = pxTaskStatusArray[i].pcTaskName;
         uint32_t time = pxTaskStatusArray[i].ulRunTimeCounter;
         float pcnt = (ulTotalRunTime > 0)
-                         ? (100.0f * static_cast<float>(time) / static_cast<float>(ulTotalRunTime))
-                         : 0;
+            ? (100.0f * static_cast<float>(time) / static_cast<float>(ulTotalRunTime))
+            : 0;
         printf("%-17s %8lu ticks   %5.1f%%\n", name, time, pcnt);
     }
 
     vPortFree(pxTaskStatusArray);
 }
 
-extern "C" [[noreturn]] void app_main(void)
+// ESP_LOGI("main", "Initializing ConfigManager");
+// esp_err_t ret = ConfigManager::instance().init();
+// if (ret != ESP_OK) {
+//     ESP_LOGE("main", "Failed to initialize ConfigManager: %d", ret);
+// } else {
+//     ESP_LOGI("main", "ConfigManager initialized successfully");
+//
+//     // Test direct access to a key
+//     bool imu_enabled = ConfigManager::instance().getBool("imu/enabled", true);
+//     ESP_LOGI("main", "Direct access to imu/enabled: %d", imu_enabled);
+// }
+
+// LogMonitor::Config log_config;
+// log_config.ap_ssid = "ESP32-Monitor";
+// log_config.ap_password = "password";
+//
+// LogMonitor::instance().init(log_config);
+// LogMonitor::instance().start();
+//
+// ESP_LOGI("main", "Log monitor started! Connect to WiFi SSID: %s", log_config.ap_ssid);
+// ESP_LOGI("main", "Use 'nc YOUR_ESP_IP 8888' to view logs");
+
+// https://github.com/jcheger/frsky-arduino/blob/db6c461c6a9bcde0d8e31876f9805db04cabf831/FrskySP/FrskySP.cpp#L176
+
+extern "C" void app_main(void)
 {
-    // ESP_LOGI("main", "Initializing ConfigManager");
-    // esp_err_t ret = ConfigManager::instance().init();
-    // if (ret != ESP_OK) {
-    //     ESP_LOGE("main", "Failed to initialize ConfigManager: %d", ret);
-    // } else {
-    //     ESP_LOGI("main", "ConfigManager initialized successfully");
-    //
-    //     // Test direct access to a key
-    //     bool imu_enabled = ConfigManager::instance().getBool("imu/enabled", true);
-    //     ESP_LOGI("main", "Direct access to imu/enabled: %d", imu_enabled);
-    // }
-
-    // LogMonitor::Config log_config;
-    // log_config.ap_ssid = "ESP32-Monitor";
-    // log_config.ap_password = "password";
-    //
-    // LogMonitor::instance().init(log_config);
-    // LogMonitor::instance().start();
-    //
-    // ESP_LOGI("main", "Log monitor started! Connect to WiFi SSID: %s", log_config.ap_ssid);
-    // ESP_LOGI("main", "Use 'nc YOUR_ESP_IP 8888' to view logs");
-
-
     proto::SbusDriver::Config sbus_config;
     sbus_config.uart_num = UART_NUM_1;
     sbus_config.uart_tx_pin = GPIO_NUM_17;
+    sbus_config.uart_tx_pin = GPIO_NUM_NC;
     sbus_config.uart_rx_pin = GPIO_NUM_18;
     sbus_config.buad_rate = 100'000;
     static proto::SbusDriver sbus_driver(sbus_config);
     ESP_ERROR_CHECK(sbus_driver.init());
     ESP_ERROR_CHECK(sbus_driver.start());
 
-    // proto::NmeaDriver::Config gps_config;
-    // gps_config.uart_num = UART_NUM_2;
-    // gps_config.uart_tx_pin = GPIO_NUM_7;
-    // gps_config.uart_rx_pin = GPIO_NUM_15;
-    // gps_config.buad_rate = 38400;
-    // gps_config.rx_buffer_size = 2048;
-    // gps_config.tx_buffer_size = 0;
-    // gps_config.pattern_queue_size = 16;
-    // gps_config.task_stack_size = 4096;
-    // gps_config.task_priority = 5;
-    // static proto::NmeaDriver gps_driver(gps_config);
-    // ESP_ERROR_CHECK(gps_driver.init());
-    // ESP_ERROR_CHECK(gps_driver.start());
+    proto::NmeaDriver::Config gps_config;
+    gps_config.uart_num = UART_NUM_2;
+    gps_config.uart_tx_pin = GPIO_NUM_7;
+    gps_config.uart_rx_pin = GPIO_NUM_15;
+    gps_config.buad_rate = 38'400;
+    gps_config.rx_buffer_size = 2048;
+    gps_config.tx_buffer_size = 0;
+    gps_config.pattern_queue_size = 16;
+    gps_config.task_stack_size = 4096;
+    gps_config.task_priority = 5;
+    static proto::NmeaDriver gps_driver(gps_config);
+    ESP_ERROR_CHECK(gps_driver.init());
+    ESP_ERROR_CHECK(gps_driver.start());
 
     proto::Icm20948Driver::Config imu_config;
     imu_config.spi_host = SPI2_HOST;
@@ -119,7 +121,6 @@ extern "C" [[noreturn]] void app_main(void)
     static proto::Icm20948Driver imu_driver(imu_config);
     ESP_ERROR_CHECK(imu_driver.init());
     ESP_ERROR_CHECK(imu_driver.start());
-
 
     while (true) {
         printf("\x1b[2J\x1b[H");
@@ -173,11 +174,14 @@ extern "C" [[noreturn]] void app_main(void)
 
         for (int i = 0; i < rc::k_channel_count; i++) {
             printf("CH%02d: %4d - ", i + 1, values[i]);
-               printf("%s\n",
-                     rc::Receiver::instance().get(static_cast<rc::ChannelIndex>(i)).low() ? "low" :
-                     rc::Receiver::instance().get(static_cast<rc::ChannelIndex>(i)).mid() ? "mid" :
-                     rc::Receiver::instance().get(static_cast<rc::ChannelIndex>(i)).high() ? "high" :
-                        "unknown" );
+            printf("%s\n",
+                   rc::Receiver::instance().get(static_cast<rc::ChannelIndex>(i)).low()
+                   ? "low"
+                   : rc::Receiver::instance().get(static_cast<rc::ChannelIndex>(i)).mid()
+                   ? "mid"
+                   : rc::Receiver::instance().get(static_cast<rc::ChannelIndex>(i)).high()
+                   ? "high"
+                   : "unknown");
         }
 
 

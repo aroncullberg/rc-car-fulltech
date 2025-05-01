@@ -4,10 +4,7 @@
 
 #pragma once
 
-#include <array>
 #include <esp_timer.h>
-#include <limits>
-#include <vector>
 
 namespace profiler
 {
