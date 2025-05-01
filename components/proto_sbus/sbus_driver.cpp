@@ -6,7 +6,7 @@
 
 #include <lwip/pbuf.h>
 
-using rc::ChannelValue;
+using rc::channel_value_t;
 using rc::ChannelIndex;
 
 static const char *TAG = "SbusDriver";
@@ -90,9 +90,6 @@ namespace proto
     void SbusDriver::run() {
         uart_event_t e;
 
-        uint64_t prev_us = 0;
-
-
         // TODO: decrease indenting
         while (true) {
             if (xQueueReceive(uart_evt_q_, &e, portMAX_DELAY) != pdTRUE) {
@@ -161,7 +158,7 @@ namespace proto
                 }
             }
 
-            ChannelValue scaled = rawToScaled(raw);
+            channel_value_t scaled = rawToScaled(raw);
 
             // if (ch == 0) printf("%4u: %4u\n", raw, scaled);
 

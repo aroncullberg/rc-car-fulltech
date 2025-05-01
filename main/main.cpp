@@ -35,28 +35,27 @@
 // Chatgpt
 void printRunTimeStatsLight()
 {
-       // How many tasks are actually running?
-       UBaseType_t uxArraySize = uxTaskGetNumberOfTasks();
-       // Allocate an array of TaskStatus_t
-       TaskStatus_t *pxTaskStatusArray = (TaskStatus_t*)pvPortMalloc( uxArraySize * sizeof( TaskStatus_t ) );
-       uint32_t ulTotalRunTime;
+    // How many tasks are actually running?
+    UBaseType_t uxArraySize = uxTaskGetNumberOfTasks();
+    // Allocate an array of TaskStatus_t
+    TaskStatus_t* pxTaskStatusArray = (TaskStatus_t*)pvPortMalloc(uxArraySize * sizeof(TaskStatus_t));
+    uint32_t ulTotalRunTime;
 
-       // Fill in the array — this only does one pass internally, no sprintf()
-       uxArraySize = uxTaskGetSystemState( pxTaskStatusArray, uxArraySize, &ulTotalRunTime );
+    // Fill in the array — this only does one pass internally, no sprintf()
+    uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, &ulTotalRunTime);
 
-       // Now you have each pxTaskStatusArray[i].ulRunTimeCounter
-       // Do your own percent math and lightweight printing
-       for( UBaseType_t i = 0; i < uxArraySize; i++ )
-       {
-              const char* name  = pxTaskStatusArray[i].pcTaskName;
-              uint32_t     time  = pxTaskStatusArray[i].ulRunTimeCounter;
-              float        pcnt  = (ulTotalRunTime > 0)
-                                  ? (100.0f * static_cast<float>(time) / static_cast<float>(ulTotalRunTime))
-                                  : 0;
-              printf( "%-17s %8lu ticks   %5.1f%%\n", name, time, pcnt );
-       }
+    // Now you have each pxTaskStatusArray[i].ulRunTimeCounter
+    // Do your own percent math and lightweight printing
+    for (UBaseType_t i = 0; i < uxArraySize; i++) {
+        const char* name = pxTaskStatusArray[i].pcTaskName;
+        uint32_t time = pxTaskStatusArray[i].ulRunTimeCounter;
+        float pcnt = (ulTotalRunTime > 0)
+                         ? (100.0f * static_cast<float>(time) / static_cast<float>(ulTotalRunTime))
+                         : 0;
+        printf("%-17s %8lu ticks   %5.1f%%\n", name, time, pcnt);
+    }
 
-       vPortFree( pxTaskStatusArray );
+    vPortFree(pxTaskStatusArray);
 }
 
 extern "C" [[noreturn]] void app_main(void)
@@ -83,16 +82,16 @@ extern "C" [[noreturn]] void app_main(void)
     // ESP_LOGI("main", "Log monitor started! Connect to WiFi SSID: %s", log_config.ap_ssid);
     // ESP_LOGI("main", "Use 'nc YOUR_ESP_IP 8888' to view logs");
 
-    //
-    // proto::SbusDriver::Config sbus_config;
-    // sbus_config.uart_num = UART_NUM_1;
-    // sbus_config.uart_tx_pin = GPIO_NUM_17;
-    // sbus_config.uart_rx_pin = GPIO_NUM_18;
-    // sbus_config.buad_rate = 100'000;
-    // static proto::SbusDriver sbus_driver(sbus_config);
-    // ESP_ERROR_CHECK(sbus_driver.init());
-    // ESP_ERROR_CHECK(sbus_driver.start());
-    //
+
+    proto::SbusDriver::Config sbus_config;
+    sbus_config.uart_num = UART_NUM_1;
+    sbus_config.uart_tx_pin = GPIO_NUM_17;
+    sbus_config.uart_rx_pin = GPIO_NUM_18;
+    sbus_config.buad_rate = 100'000;
+    static proto::SbusDriver sbus_driver(sbus_config);
+    ESP_ERROR_CHECK(sbus_driver.init());
+    ESP_ERROR_CHECK(sbus_driver.start());
+
     // proto::NmeaDriver::Config gps_config;
     // gps_config.uart_num = UART_NUM_2;
     // gps_config.uart_tx_pin = GPIO_NUM_7;
@@ -170,11 +169,17 @@ extern "C" [[noreturn]] void app_main(void)
 
         printf("\n=== RC Status ===\n\n");
 
-        auto values = rc::Receiver::instance().getAll();
+        auto values = rc::Receiver::instance().get_all();
 
-        for (int i = 0; i < rc::kChannelCount; i++) {
-            printf("CH%02d: %4d  \n", i + 1, values[i]);
+        for (int i = 0; i < rc::k_channel_count; i++) {
+            printf("CH%02d: %4d - ", i + 1, values[i]);
+               printf("%s\n",
+                     rc::Receiver::instance().get(static_cast<rc::ChannelIndex>(i)).low() ? "low" :
+                     rc::Receiver::instance().get(static_cast<rc::ChannelIndex>(i)).mid() ? "mid" :
+                     rc::Receiver::instance().get(static_cast<rc::ChannelIndex>(i)).high() ? "high" :
+                        "unknown" );
         }
+
 
         printf("\n=== IMU Status ===\n\n");
 
@@ -190,11 +195,11 @@ extern "C" [[noreturn]] void app_main(void)
         printf("Quat6:  X: %6ld  Y: %6ld  Z: %6ld\n", quat6.x, quat6.y, quat6.z);
         printf("Quat9:  X: %6ld  Y: %6ld  Z: %6ld  Accuracy: %6d\n",
                quat9.x, quat9.y, quat9.z, quat9.accuracy);
-        printf("duty_cycle_permille: %f‰\n", static_cast<float>(stats.duty_cycle_permille)/ 1000.0f);
+        printf("duty_cycle_permille: %f‰\n", static_cast<float>(stats.duty_cycle_permille) / 1000.0f);
         printf("average freq: %4.1f Hz\n", static_cast<float>(stats.average_freq_mill_hz) / 1000.0f);
         // printf("Runtime stats: \n%s\n", stats.run_time_stats);
 
-           printRunTimeStatsLight();
+        printRunTimeStatsLight();
 
 
         vTaskDelay(pdMS_TO_TICKS(1000));

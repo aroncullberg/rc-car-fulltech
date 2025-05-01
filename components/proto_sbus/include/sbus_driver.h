@@ -59,7 +59,7 @@ namespace proto
             return lut;
         }();
 
-        static constexpr rc::ChannelValue rawToScaled(const uint16_t raw) {
+        static constexpr rc::channel_value_t rawToScaled(const uint16_t raw) {
             const uint16_t clamped = std::clamp(raw, RAW_MIN, RAW_MAX);
             return SCALE_LUT[clamped - RAW_MIN];
         }
