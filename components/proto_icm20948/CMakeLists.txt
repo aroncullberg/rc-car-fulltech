@@ -9,5 +9,6 @@ idf_component_register(
         "esp_common"
         "motion"
         "cr-icm20948"
+        "profiler"
 )
 

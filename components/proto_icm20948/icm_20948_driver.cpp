@@ -9,11 +9,11 @@
 #include "icm_20948_driver.h"
 #include "imu_types.h"
 #include "imu.h"
+#include "measure.hpp"
 
 using motion::Imu;
 using motion::Accel;
 using motion::Gyro;
-using motion::Mag;
 using motion::Quat6;
 using motion::Quat9;
 using motion::Stats;
@@ -280,8 +280,6 @@ esp_err_t Icm20948Driver::configureDmp() {
     // Value = (DMP running rate (225Hz) / ODR ) - 1
     // E.g. For a 25Hz ODR rate, value= (225/25) -1 = 8.
 
-    // During run-time, if an ODR is changed, the corresponding rate counter must be reset.
-    // To reset, write 2-byte {0,0} to DMP using keys below for a particular sensor:
     success &= inv_icm20948_set_dmp_sensor_period(&device_, DMP_ODR_Reg_Accel, 224) == ICM_20948_STAT_OK;
     success &= inv_icm20948_set_dmp_sensor_period(&device_, DMP_ODR_Reg_Gyro, 0) == ICM_20948_STAT_OK;
     success &= inv_icm20948_set_dmp_sensor_period(&device_, DMP_ODR_Reg_Quat6, 224) == ICM_20948_STAT_OK;
@@ -334,10 +332,14 @@ void Icm20948Driver::run() {
     icm_20948_DMP_data_t dmp_data{};
     uint32_t token;
 
+    static profiler::Measure measure;
+
     for (;;) {
         if (xQueueReceive(int_queue_, &token, portMAX_DELAY) != pdTRUE) {
             continue;
         }
+
+        measure.start();
 
         icm20948_status_e st;
         do {
@@ -348,16 +350,15 @@ void Icm20948Driver::run() {
                     accel.x = static_cast<int16_t>(dmp_data.Raw_Accel.Data.X - 79);
                     accel.y = static_cast<int16_t>(dmp_data.Raw_Accel.Data.Y + 30);
                     accel.z = static_cast<int16_t>(dmp_data.Raw_Accel.Data.Z + 0);
-                    // printf("Accel: %d %d %d\n", accel.x, accel.y, accel.z);
                     Imu::instance().update(accel);
                 }
 
                 if (dmp_data.header & DMP_header_bitmap_Gyro_Calibr) {
                     Gyro gyro{};
+
                     gyro.x = static_cast<int16_t>(dmp_data.Raw_Gyro.Data.X - 3);
                     gyro.y = static_cast<int16_t>(dmp_data.Raw_Gyro.Data.Y - 8);
                     gyro.z = static_cast<int16_t>(dmp_data.Raw_Gyro.Data.Z - 0);
-                    // printf("Gyro: %d %d %d\n", gyro.x, gyro.y, gyro.z);
                     Imu::instance().update(gyro);
                 }
 
@@ -366,7 +367,6 @@ void Icm20948Driver::run() {
                     quat6.x = dmp_data.Quat6.Data.Q1;
                     quat6.y = dmp_data.Quat6.Data.Q2;
                     quat6.z = dmp_data.Quat6.Data.Q3;
-                    // printf("Quat6: %ld %ld %ld\n", quat6.x, quat6.y, quat6.z);
                     Imu::instance().update(quat6);
                 }
 
@@ -376,10 +376,22 @@ void Icm20948Driver::run() {
                     quat9.y = dmp_data.Quat9.Data.Q2;
                     quat9.z = dmp_data.Quat9.Data.Q3;
                     quat9.accuracy = dmp_data.Quat9.Data.Accuracy;
-                    // printf("Quat9: %ld %ld %ld %d\n", quat9.x, quat9.y, quat9.z, quat9.accuracy);
                     Imu::instance().update(quat9);
                 }
             }
         } while (st == ICM_20948_STAT_FIFO_MORE_DATA_AVAIL);
+
+        measure.end();
+        static size_t count = 0;
+        if (++count % 100 == 0) {
+            count = 0;
+            Stats stats;
+            stats.average_freq_mill_hz = measure.average_freq_mill_hz();
+            stats.duty_cycle_permille = measure.duty_cycle_permille();
+
+            vTaskGetRunTimeStats(stats.run_time_stats);
+            Imu::instance().update(stats);
+        }
     }
 }
+

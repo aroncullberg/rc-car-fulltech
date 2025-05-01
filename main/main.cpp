@@ -32,8 +32,35 @@
 //     { NULL, 0 } // Terminates the array
 // };
 
+// Chatgpt
+void printRunTimeStatsLight()
+{
+       // How many tasks are actually running?
+       UBaseType_t uxArraySize = uxTaskGetNumberOfTasks();
+       // Allocate an array of TaskStatus_t
+       TaskStatus_t *pxTaskStatusArray = (TaskStatus_t*)pvPortMalloc( uxArraySize * sizeof( TaskStatus_t ) );
+       uint32_t ulTotalRunTime;
 
-extern "C" [[noreturn]] void app_main(void) {
+       // Fill in the array — this only does one pass internally, no sprintf()
+       uxArraySize = uxTaskGetSystemState( pxTaskStatusArray, uxArraySize, &ulTotalRunTime );
+
+       // Now you have each pxTaskStatusArray[i].ulRunTimeCounter
+       // Do your own percent math and lightweight printing
+       for( UBaseType_t i = 0; i < uxArraySize; i++ )
+       {
+              const char* name  = pxTaskStatusArray[i].pcTaskName;
+              uint32_t     time  = pxTaskStatusArray[i].ulRunTimeCounter;
+              float        pcnt  = (ulTotalRunTime > 0)
+                                  ? (100.0f * static_cast<float>(time) / static_cast<float>(ulTotalRunTime))
+                                  : 0;
+              printf( "%-17s %8lu ticks   %5.1f%%\n", name, time, pcnt );
+       }
+
+       vPortFree( pxTaskStatusArray );
+}
+
+extern "C" [[noreturn]] void app_main(void)
+{
     // ESP_LOGI("main", "Initializing ConfigManager");
     // esp_err_t ret = ConfigManager::instance().init();
     // if (ret != ESP_OK) {
@@ -153,7 +180,6 @@ extern "C" [[noreturn]] void app_main(void) {
 
         auto accel = motion::Imu::instance().getAccel();
         auto gyro = motion::Imu::instance().getGyro();
-        auto mag = motion::Imu::instance().getMag();
         auto quat6 = motion::Imu::instance().getQuat6();
         auto quat9 = motion::Imu::instance().getQuat9();
         auto stats = motion::Imu::instance().getStats();
@@ -161,14 +187,17 @@ extern "C" [[noreturn]] void app_main(void) {
         printf("Accel:  X: %6d  Y: %6d  Z: %6d\n",
                accel.x, accel.y, accel.z);
         printf("Gyro:   X: %6d  Y: %6d  Z: %6d\n", gyro.x, gyro.y, gyro.z);
-        printf("Mag:    X: %6d  Y: %6d  Z: %6d\n",
-               mag.x, mag.y, mag.z);
         printf("Quat6:  X: %6ld  Y: %6ld  Z: %6ld\n", quat6.x, quat6.y, quat6.z);
         printf("Quat9:  X: %6ld  Y: %6ld  Z: %6ld  Accuracy: %6d\n",
                quat9.x, quat9.y, quat9.z, quat9.accuracy);
+        printf("duty_cycle_permille: %f‰\n", static_cast<float>(stats.duty_cycle_permille)/ 1000.0f);
+        printf("average freq: %4.1f Hz\n", static_cast<float>(stats.average_freq_mill_hz) / 1000.0f);
+        // printf("Runtime stats: \n%s\n", stats.run_time_stats);
+
+           printRunTimeStatsLight();
 
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
     // Servo::Config servo_config;

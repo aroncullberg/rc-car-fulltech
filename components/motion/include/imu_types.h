@@ -6,39 +6,46 @@
 
 #include <cstdint>
 
-namespace motion {
-
-struct Accel {
+namespace motion
+{
+struct Accel
+{
     int16_t x{0};
     int16_t y{0};
     int16_t z{0};
 };
 
-struct Gyro {
+struct Gyro
+{
     int16_t x{0};
     int16_t y{0};
     int16_t z{0};
 };
 
-    static constexpr float GYRO_TO_DPS = 500.0f / 32768.0f;
+static constexpr float GYRO_TO_DPS = 500.0f / 32768.0f;
 
 
-struct Quat6 {
+struct Quat6
+{
     int32_t x{0};
     int32_t y{0};
     int32_t z{0};
 };
 
-struct Quat9 {
+struct Quat9
+{
     int32_t x{0};
     int32_t y{0};
     int32_t z{0};
     int16_t accuracy{0};
 };
 
-struct Stats {
-  bool valid_data{false};
-  // todo: add more stats
- };
 
+struct Stats
+{
+    char run_time_stats[256]{};
+    uint32_t duty_cycle_permille{0};
+    uint32_t average_freq_mill_hz{0};
+    // todo: add more stats
+};
 }
