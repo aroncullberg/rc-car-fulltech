@@ -1,13 +1,9 @@
-; [submodule "components/proto_icm20948/cr-icm20948"]
-; 	path = components/proto_icm20948/cr-icm20948
-; 	url = https://github.com/aroncullberg/icm20948
 [submodule "components/GPS/tinygps-espidf"]
 	path = components/proto_nmea/tinygps-espidf
 	url = https://github.com/aroncullberg/TinyGPSPlus-ESPIDF
 [submodule "components/EscDriver"]
 	path = components/EscDriver
 	url = https://github.com/aroncullberg/DShot-ESP32RMT
-
 [submodule "components/proto_icm20948/cr-icm20948"]
 	path = components/proto_icm20948/cr-icm20948
 	url = https://github.com/aroncullberg/icm20948
