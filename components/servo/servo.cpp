@@ -5,13 +5,13 @@
 // TODO: figure out what should be in constuctor(?) and what should be in init
 Servo::Servo(const Config& config) : config_(config) {
     // TODO: Clamp this value to a resnoable range
-    invert_steering_ = ConfigManager::instance().getBool("servo/inv_steer", invert_steering_);
-    offset_ = ConfigManager::instance().getInt("servo/offset", offset_);
-    // range_ = ConfigManager::instance().getInt("servo/range", range_);
-
-
-    callback_ = [this] { this->updateFromConfig(); };
-    ConfigManager::instance().registerCallback(callback_);
+    // invert_steering_ = ConfigManager::instance().getBool("servo/inv_steer", invert_steering_);
+    // offset_ = ConfigManager::instance().getInt("servo/offset", offset_);
+    // // range_ = ConfigManager::instance().getInt("servo/range", range_);
+    //
+    //
+    // callback_ = [this] { this->updateFromConfig(); };
+    // ConfigManager::instance().registerCallback(callback_);
 
     init();
 }
@@ -29,7 +29,7 @@ Servo::~Servo() {
     if (timer_) {
         mcpwm_del_timer(timer_);
     }
-    ConfigManager::instance().unregisterCallback(&callback_);
+    // ConfigManager::instance().unregisterCallback(&callback_);
 }
 
 esp_err_t Servo::init() {
@@ -118,26 +118,26 @@ esp_err_t Servo::init() {
     return ESP_OK;
 }
 
-void Servo::updateFromConfig() {
-    bool new_invert_steering_ = ConfigManager::instance().getBool("servo/inv_steer", invert_steering_);
-    if (new_invert_steering_ != invert_steering_) {
-        ESP_LOGI(TAG, "Invert steering changed: %d -> %d",
-                 invert_steering_, new_invert_steering_);
-        invert_steering_ = new_invert_steering_;
-    }
-    int new_offset_ = ConfigManager::instance().getInt("servo/offset", offset_);
-    if (new_offset_ != offset_) {
-        ESP_LOGI(TAG, "Offset changed: %d -> %d",
-                 offset_, new_offset_);
-        offset_ = new_offset_;
-    }
-    int new_range = ConfigManager::instance().getInt("servo/range", range_);
-    if (new_range != range_) {
-        ESP_LOGI(TAG, "Range changed: %d -> %d",
-                 range_, new_range);
-        range_ = new_range;
-    }
-}
+// void Servo::updateFromConfig() {
+    // bool new_invert_steering_ = ConfigManager::instance().getBool("servo/inv_steer", invert_steering_);
+    // if (new_invert_steering_ != invert_steering_) {
+    //     ESP_LOGI(TAG, "Invert steering changed: %d -> %d",
+    //              invert_steering_, new_invert_steering_);
+    //     invert_steering_ = new_invert_steering_;
+    // }
+    // int new_offset_ = ConfigManager::instance().getInt("servo/offset", offset_);
+    // if (new_offset_ != offset_) {
+    //     ESP_LOGI(TAG, "Offset changed: %d -> %d",
+    //              offset_, new_offset_);
+    //     offset_ = new_offset_;
+    // }
+    // int new_range = ConfigManager::instance().getInt("servo/range", range_);
+    // if (new_range != range_) {
+    //     ESP_LOGI(TAG, "Range changed: %d -> %d",
+    //              range_, new_range);
+    //     range_ = new_range;
+    // }
+// }
 
 
 

@@ -6,10 +6,7 @@ idf_component_register(
     REQUIRES         
         "esp_timer"
         "freertos"
-        "log_monitor"
         "servo"
-        "ConfigManager"
-        "nvs_flash"
         "driver"
         "rc"
         "proto_sbus"
@@ -17,6 +14,7 @@ idf_component_register(
         "proto_nmea"
         "proto_icm20948"
         "motion"
+        "console_interface"
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE 

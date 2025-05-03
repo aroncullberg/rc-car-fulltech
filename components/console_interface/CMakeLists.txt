@@ -1,0 +1,10 @@
+idf_component_register(
+    SRCS
+        "console_engine.cpp"
+        "usb_transport.cpp"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        "driver"
+        "console"
+)

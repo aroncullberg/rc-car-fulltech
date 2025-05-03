@@ -5,7 +5,7 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "sensor_types.h"
-#include "config_manager.h"
+// #include "config_manager.h"
 
 class Servo {
 public:
@@ -16,8 +16,8 @@ public:
         uint32_t freq_hz{50};              // PWM frequency in Hz (standard servo is 50Hz)
     };
 
-    void updateFromConfig();
-    ConfigManager::ConfigChangeCallback callback_;
+    // void updateFromConfig();
+    // ConfigManager::ConfigChangeCallback callback_;
 
     explicit Servo(const Config& config);
     ~Servo();

@@ -5,6 +5,6 @@ idf_component_register(
         "."
     REQUIRES         
         "driver"
-        "ConfigManager"
+#        "ConfigManager"
         "shared"
 )

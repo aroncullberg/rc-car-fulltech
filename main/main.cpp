@@ -1,9 +1,10 @@
+#include <esp_console.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-#include "log_monitor.h"
-#include "config_manager.h"
 #include <stdio.h>
+#include <usb_transport.h>
 
 #include "receiver.h"
 #include "sbus_driver.h"
@@ -12,25 +13,14 @@
 #include "icm_20948_driver.h"
 #include "imu.h"
 
+#include "console_engine.h"
+#include "console_transport.h"
+
+
 
 #ifndef TAG
 #define TAG "main"
 #endif
-
-// // External PSRAM base address (?)
-// #define EXTERNAL_PSRAM_BASE_ADDRESS 0x3F800000
-//
-// // Define the size of each heap region
-// #define HEAP_REGION1_SIZE 0x10000  // 64 KB
-// #define HEAP_REGION2_SIZE 0x20000  // 128 KB
-//
-// // Define the heap regions array
-// static HeapRegion_t xHeapRegions[] =
-// {
-//     { (uint8_t *)EXTERNAL_PSRAM_BASE_ADDRESS, HEAP_REGION1_SIZE },
-//     { (uint8_t *)EXTERNAL_PSRAM_BASE_ADDRESS + HEAP_REGION1_SIZE, HEAP_REGION2_SIZE },
-//     { NULL, 0 } // Terminates the array
-// };
 
 // Chatgpt
 void printRunTimeStatsLight()
@@ -58,32 +48,33 @@ void printRunTimeStatsLight()
     vPortFree(pxTaskStatusArray);
 }
 
-// ESP_LOGI("main", "Initializing ConfigManager");
-// esp_err_t ret = ConfigManager::instance().init();
-// if (ret != ESP_OK) {
-//     ESP_LOGE("main", "Failed to initialize ConfigManager: %d", ret);
-// } else {
-//     ESP_LOGI("main", "ConfigManager initialized successfully");
-//
-//     // Test direct access to a key
-//     bool imu_enabled = ConfigManager::instance().getBool("imu/enabled", true);
-//     ESP_LOGI("main", "Direct access to imu/enabled: %d", imu_enabled);
-// }
-
-// LogMonitor::Config log_config;
-// log_config.ap_ssid = "ESP32-Monitor";
-// log_config.ap_password = "password";
-//
-// LogMonitor::instance().init(log_config);
-// LogMonitor::instance().start();
-//
-// ESP_LOGI("main", "Log monitor started! Connect to WiFi SSID: %s", log_config.ap_ssid);
-// ESP_LOGI("main", "Use 'nc YOUR_ESP_IP 8888' to view logs");
-
-// https://github.com/jcheger/frsky-arduino/blob/db6c461c6a9bcde0d8e31876f9805db04cabf831/FrskySP/FrskySP.cpp#L176
-
 extern "C" void app_main(void)
 {
+
+    console::Engine::instance().init();
+
+    static esp_console_cmd_t cmd_hello = {
+        .command = "hello",
+        .help = "responds with \'Hello World!\'",
+        .hint = nullptr,
+        .func = [](int argc, char** argv)
+        {
+            console::Engine::instance().write_line("Hello World!");
+            return 0;
+        },
+    };
+    ESP_ERROR_CHECK(esp_console_cmd_register(&cmd_hello));
+
+    static console::UsbTransport usb;
+
+    console::Engine::instance().register_transport(&usb);
+
+    usb.start();
+
+    while (true) {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    };
+
     proto::SbusDriver::Config sbus_config;
     sbus_config.uart_num = UART_NUM_1;
     sbus_config.uart_tx_pin = GPIO_NUM_17;
@@ -201,32 +192,12 @@ extern "C" void app_main(void)
                quat9.x, quat9.y, quat9.z, quat9.accuracy);
         printf("duty_cycle_permille: %f‰\n", static_cast<float>(stats.duty_cycle_permille) / 1000.0f);
         printf("average freq: %4.1f Hz\n", static_cast<float>(stats.average_freq_mill_hz) / 1000.0f);
-        // printf("Runtime stats: \n%s\n", stats.run_time_stats);
+
+        printf("\n=== Runtime stats ===\n\n");
 
         printRunTimeStatsLight();
 
 
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
-
-    // Servo::Config servo_config;
-    // servo_config.gpio_num = static_cast<gpio_num_t>(CONFIG_SERVO_OUTPUT_GPIO);
-    // // servo_config.freq_hz = static_cast<uint32_t>(CONFIG_SERVO_FREQUENCY_HZ);
-    // servo_config.min_pulse_width_us = static_cast<uint32_t>(1000);
-    // servo_config.max_pulse_width_us = static_cast<uint32_t>(2000);
-    //
-    // VehicleDynamicsController::Config vd_config;
-    // vd_config.motors_config.front_left_pin = static_cast<gpio_num_t>(38);
-    // vd_config.motors_config.front_right_pin = static_cast<gpio_num_t>(39);
-    // vd_config.motors_config.rear_left_pin = static_cast<gpio_num_t>(40);
-    // vd_config.motors_config.rear_right_pin = static_cast<gpio_num_t>(41);
-    // vd_config.motors_config.dshot_mode = DSHOT300_BIDIRECTIONAL;
-    // vd_config.servo_config = servo_config;
-    // vd_config.task_stack_size = 8162;
-    // vd_config.task_priority = 7;
-    // vd_config.frequency = Frequency::F200Hz;
-    //
-    // static VehicleDynamicsController vd_controller(vd_config);
-    // ESP_ERROR_CHECK(vd_controller.init());
-    // ESP_ERROR_CHECK(vd_controller.start());
 }
