@@ -19,11 +19,11 @@ class Imu {
 public:
     static Imu &instance();
 
-    Accel getAccel() const;
-    Gyro getGyro() const;
-    Quat6 getQuat6() const;
-    Quat9 getQuat9() const;
-    Stats getStats() const;
+    Accel get_accel() const;
+    Gyro get_gyro() const;
+
+    constexpr float get_accel_scale() const { return static_cast<float>(2 << accel_fsr_) / 32768.0f; }
+    constexpr float get_gyro_scale() const { return static_cast<float>(25 << gyro_fsr_) / 32768.0f; }
 
     Imu(const Imu &) = delete;
     Imu &operator=(const Imu &) = delete;
@@ -34,15 +34,15 @@ private:
 
     void update(const Accel &a);
     void update(const Gyro &g);
-    void update(const Quat6 &q6);
-    void update(const Quat9 &q9);
-    void update(const Stats &s);
+
+    void set_accel_fsr(uint8_t fsr) { accel_fsr_ = fsr; }
+    void set_gyro_fsr(uint8_t fsr) { gyro_fsr_ = fsr; }
+
+    uint8_t gyro_fsr_{1};
+    uint8_t accel_fsr_{1};
 
     std::atomic<Accel> accel_{Accel()};
     std::atomic<Gyro> gyro_{Gyro()};
-    std::atomic<Quat6> quat6_{Quat6()};
-    std::atomic<Quat9> quat9_{Quat9()};
-    std::atomic<Stats> stats_{Stats()};
 };
 }
 

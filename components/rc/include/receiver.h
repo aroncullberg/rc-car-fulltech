@@ -8,7 +8,6 @@
 #include <atomic>
 #include <channel_types.h>
 
-#include "channel_types.h"
 
 // NOTE: this is a forward declaration, "alternative" to #include "receiver.h"
 namespace proto

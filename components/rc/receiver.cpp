@@ -2,8 +2,9 @@
 // Created by cullb on 2025-04-26.
 //
 
-#include <cstdio>
 #include <receiver.h>
+
+#include "channel_types.h"
 
 using namespace rc;
 

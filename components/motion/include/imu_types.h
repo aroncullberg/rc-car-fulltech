@@ -8,44 +8,25 @@
 
 namespace motion
 {
+/**
+ * m/s²
+ */
 struct Accel
 {
-    int16_t x{0};
-    int16_t y{0};
-    int16_t z{0};
+    float x{0};
+    float y{0};
+    float z{0};
+    float frequency{0};
 };
 
+/**
+ * use  deg/s
+ */
 struct Gyro
 {
-    int16_t x{0};
-    int16_t y{0};
-    int16_t z{0};
-};
-
-static constexpr float GYRO_TO_DPS = 500.0f / 32768.0f;
-
-
-struct Quat6
-{
-    int32_t x{0};
-    int32_t y{0};
-    int32_t z{0};
-};
-
-struct Quat9
-{
-    int32_t x{0};
-    int32_t y{0};
-    int32_t z{0};
-    int16_t accuracy{0};
-};
-
-
-struct Stats
-{
-    char run_time_stats[256]{};
-    uint32_t duty_cycle_permille{0};
-    uint32_t average_freq_mill_hz{0};
-    // todo: add more stats
+    float x{0};
+    float y{0};
+    float z{0};
+    float frequency{0};
 };
 }

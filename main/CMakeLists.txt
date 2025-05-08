@@ -4,17 +4,21 @@ idf_component_register(
     INCLUDE_DIRS
         "."
     REQUIRES         
-        "esp_timer"
-        "freertos"
         "servo"
         "driver"
-        "rc"
-        "proto_sbus"
         "nav"
         "proto_nmea"
-        "proto_icm20948"
+        "rc"
+        "proto_sbus"
         "motion"
-        "console_interface"
+        "proto_icm20948"
+        "console"
+        "nvs_flash"
+        "esp_driver_usb_serial_jtag"
+        "config"
+        "esp_wifi"
+        "dashboard"
+        "diagnostics"
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE 

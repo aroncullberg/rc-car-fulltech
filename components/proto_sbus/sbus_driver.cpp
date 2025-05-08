@@ -4,8 +4,6 @@
 
 #include "sbus_driver.h"
 
-#include <lwip/pbuf.h>
-
 using rc::channel_value_t;
 using rc::ChannelIndex;
 

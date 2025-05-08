@@ -2,15 +2,15 @@
 // Created by cullb on 2025-04-27.
 //
 
-#include "esp_timer.h"
-#include <esp_check.h>
-#include "esp_log.h"
-
-#include "nmea_driver.h"
-
 #include <algorithm>
 
+#include "esp_timer.h"
+#include "esp_check.h"
+#include "esp_log.h"
+
 #include "gps.h"
+
+#include "nmea_driver.h"
 
 using nav::Gps;
 using nav::Location;

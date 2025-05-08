@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+<pre id="out"></pre>
+<script>
+    const out = document.getElementById('out');
+    const ws = new WebSocket("ws://"+location.host+"/ws");
+    ws.onmessage = ev => {
+        try {
+            const obj = JSON.parse(ev.data);
+            out.textContent = JSON.stringify(obj, null, 2);
+        } catch (e) {
+            out.textContent=ev.data
+        }
+    };
+</script></body></html>

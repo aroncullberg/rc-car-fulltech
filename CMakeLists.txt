@@ -24,10 +24,14 @@ set(EXTRA_COMPONENT_DIRS
         ${CMAKE_SOURCE_DIR}/components/proto_nmea/tinygps-espidf
 )
 
+include(
+        $ENV{IDF_PATH}/tools/cmake/project.cmake
+#        ${CMAKE_SOURCE_DIR}/managed_components/joltwallet__littlefs/project_include.cmake
+)
 
-
-
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 set(MINIMUM_ESP_IDF_VERSION "v5.4")
 
 project(fulltech)
+
+#littlefs_create_partition_image(storage ${CMAKE_CURRENT_SOURCE_DIR}/components/dashboard/static FLASH_IN_PROJECT)
+

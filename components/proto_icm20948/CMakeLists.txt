@@ -3,12 +3,12 @@ idf_component_register(
         "icm_20948_driver.cpp"
     INCLUDE_DIRS
         "include"
-    REQUIRES
+    PRIV_REQUIRES
         "driver"
         "freertos"
         "esp_common"
         "motion"
+    REQUIRES
         "cr-icm20948"
-        "profiler"
 )
 
