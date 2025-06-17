@@ -1,32 +1,50 @@
 dependencies:
-  espressif/esp_tinyusb:
-    component_hash: 67a21915323495c2538684e504bfca6d27c0073b0ef617e885d0434700f1c646
+  andyfinity/TinyGPSPlus-ESPIDF:
+    component_hash: 753a3eb1f24f6583c80612bc670ce812a1b95fe881c06391431c117e06aea191
+    dependencies: []
+    source:
+      git: https://github.com/andyfinity/TinyGPSPlus-ESPIDF
+      path: .
+      type: git
+    version: 6e4c7e632746e312f65f1b98cdf380fbf29542ad
+  aroncullberg/EscDriver:
+    component_hash: 2334ddad24a6440771bfc7d7ce79d684bfb691ba56398684dead1e776cbbec3d
+    dependencies: []
+    source:
+      git: https://github.com/aroncullberg/DShot-ESP32RMT
+      path: .
+      type: git
+    version: b0e928c635eb343f642ac66682b91d63d8154c39
+  aroncullberg/icm20948:
+    component_hash: 89481f52a2bdf4cd064ecd902fd90d6db64598e5987004b96ff3a41f3e983dda
+    dependencies:
+    - name: idf
+      version: '>=5.0'
+    source:
+      git: https://github.com/aroncullberg/icm20948
+      path: .
+      type: git
+    version: 4720cb62a5b01d86a89d52d1ac5d826aa685b318
+  espressif/mavlink:
+    component_hash: 06bd18a376a5bcc5ff7d4dddfe1a704e1f32b9920e284d2fbd795377b0c1755d
     dependencies:
     - name: idf
       require: private
-      version: ^5.0
-    - name: espressif/tinyusb
-      registry_url: https://components.espressif.com
-      require: public
-      version: '>=0.14.2'
+      version: '>=4.3.0'
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.7.4
-  espressif/tinyusb:
-    component_hash: 10703da2c3cd39a944711ee3d320c6dda54debabf13b4b933a7c90daf102372b
+    version: 1.0.0~1
+  h2zero/esp-libtelnet:
+    component_hash: 1662cf4c754ef24f8ae550c3f9734d27fc3ab8269786074be4cb9fc9c13cb06e
     dependencies:
     - name: idf
-      require: private
-      version: '>=5.0'
+      version: '>=4.0'
     source:
-      registry_url: https://components.espressif.com
-      type: service
-    targets:
-    - esp32s2
-    - esp32s3
-    - esp32p4
-    version: 0.18.0~2
+      git: https://github.com/h2zero/esp-libtelnet
+      path: .
+      type: git
+    version: 0d3d887c6cc49aafd1f685a4ae8424fb725be58a
   idf:
     source:
       type: idf
@@ -42,9 +60,13 @@ dependencies:
       type: service
     version: 1.19.2
 direct_dependencies:
-- espressif/esp_tinyusb
+- andyfinity/TinyGPSPlus-ESPIDF
+- aroncullberg/EscDriver
+- aroncullberg/icm20948
+- espressif/mavlink
+- h2zero/esp-libtelnet
 - idf
 - joltwallet/littlefs
-manifest_hash: e9aa6e8f7d495398b20334c02b498928c7fcdb2268446b62df3da424e8bb3701
+manifest_hash: 4965e3f1e54d6fcf15f2c8743442babfd4914670074546d8e79acc7221063183
 target: esp32s3
 version: 2.0.0

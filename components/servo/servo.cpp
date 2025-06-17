@@ -141,7 +141,7 @@ esp_err_t Servo::init() {
 
 
 
-uint32_t Servo::calculateCompareValue(const int16_t position) {
+uint32_t Servo::calculateCompareValue(int16_t position, int16_t range, int16_t center) {
     if (position > 2000) {
         ESP_LOGW(TAG, "Position out of range: %u setting servo to FAILSAFE_POSITION", position);
         return std::clamp(sensor::Servo::FAILSAFE_POSITION + static_cast<uint32_t>(offset_),
@@ -149,35 +149,16 @@ uint32_t Servo::calculateCompareValue(const int16_t position) {
                           static_cast<uint32_t>(config_.max_pulse_width_us));
     }
 
-    // if (range_ < 0 || range_ > 75) {
-    //     ESP_LOGW(TAG, "Range out of bounds: %d, setting to default 20%%", range_);
-    //     range_ = std::clamp(range_, 0, 75);
-    // }
+    int32_t signed_cmd = static_cast<int32_t>(position) - 1000;
 
-    if (range_ < 0 || range_ > 75) {
-        ESP_LOGW(TAG, "Range out of bounds: %d, setting to default 20%%", range_);
-        range_ = 20;
-    }
+    int32_t pulse = center + signed_cmd * range / 1000;
 
-
-    constexpr int32_t symmetric_offset = (sensor::Servo::MAX_POSITION - sensor::Servo::MIN_POSITION) / 2;
-
-    const int32_t normalized_position = static_cast<int32_t>(position) - symmetric_offset;
-
-    const int32_t scaled_position = normalized_position * range_ / 100;
-
-    uint32_t pulse_width = center_pulse_width_us_ + offset_ + scaled_position;
-
-    if (invert_steering_) {
-        pulse_width = config_.min_pulse_width_us + config_.max_pulse_width_us - pulse_width;
-    }
-
-    // ESP_LOGI(TAG, "Pulse width: %lu", pulse_width);
-
-    return std::clamp(pulse_width, static_cast<uint32_t>(config_.min_pulse_width_us), static_cast<uint32_t>(config_.max_pulse_width_us));
+    return std::clamp(pulse,
+                      static_cast<int32_t>(config_.min_pulse_width_us),
+                      static_cast<int32_t>(config_.max_pulse_width_us));
 }
 
-esp_err_t Servo::setPosition(const int16_t position)  {
+esp_err_t Servo::setPosition(int16_t position, int16_t range, int16_t center)  {
     // // print every tenth call
     // static uint32_t call_count = 0;
     // if (call_count++ % 10 == 0) {
@@ -185,5 +166,5 @@ esp_err_t Servo::setPosition(const int16_t position)  {
     // }
     // // ESP_LOGI(TAG, "Setting servo position: %ld", calculateCompareValue(position));
     // return ESP_OK;
-    return mcpwm_comparator_set_compare_value(comparator_, calculateCompareValue(position));
+    return mcpwm_comparator_set_compare_value(comparator_, calculateCompareValue(position, range, center));
 }

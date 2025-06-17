@@ -8,7 +8,6 @@ idf_component_register(
         "freertos"
         "esp_common"
         "motion"
-    REQUIRES
-        "cr-icm20948"
+        "aroncullberg__icm20948"
 )
 

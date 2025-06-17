@@ -13,10 +13,11 @@ namespace motion
  */
 struct Accel
 {
-    float x{0};
-    float y{0};
-    float z{0};
-    float frequency{0};
+    int16_t x{0};
+    int16_t y{0};
+    int16_t z{0};
+    uint16_t frequency{0};
+    uint32_t dt{0};
 };
 
 /**
@@ -24,9 +25,15 @@ struct Accel
  */
 struct Gyro
 {
-    float x{0};
-    float y{0};
-    float z{0};
-    float frequency{0};
+    int16_t x{0};
+    int16_t y{0};
+    int16_t z{0};
+    uint16_t frequency{0};
+    uint32_t dt{0};
+};
+
+struct Temp
+{
+    uint16_t celsius{0};
 };
 }

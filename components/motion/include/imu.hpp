@@ -21,6 +21,7 @@ public:
 
     Accel get_accel() const;
     Gyro get_gyro() const;
+    Temp get_temp() const;
 
     constexpr float get_accel_scale() const { return static_cast<float>(2 << accel_fsr_) / 32768.0f; }
     constexpr float get_gyro_scale() const { return static_cast<float>(25 << gyro_fsr_) / 32768.0f; }
@@ -34,15 +35,17 @@ private:
 
     void update(const Accel &a);
     void update(const Gyro &g);
+    void update(const Temp &t);
 
-    void set_accel_fsr(uint8_t fsr) { accel_fsr_ = fsr; }
-    void set_gyro_fsr(uint8_t fsr) { gyro_fsr_ = fsr; }
+    void set_accel_fsr(const uint8_t fsr) { accel_fsr_ = fsr; }
+    void set_gyro_fsr(const uint8_t fsr) { gyro_fsr_ = fsr; }
 
     uint8_t gyro_fsr_{1};
     uint8_t accel_fsr_{1};
 
     std::atomic<Accel> accel_{Accel()};
     std::atomic<Gyro> gyro_{Gyro()};
+    std::atomic<Temp> temp_{Temp()};
 };
 }
 

@@ -17,11 +17,13 @@ idf_component_register(
         "esp_driver_usb_serial_jtag"
         "config"
         "esp_wifi"
-        "dashboard"
-        "diagnostics"
+        "espressif__mavlink"
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE 
     -fno-rtti  # Disable RTTI
     -fno-exceptions  # Optional: also disable exceptions if not needed
 )
+
+target_compile_definitions(${COMPONENT_LIB}
+        PRIVATE MAVLINK_PRIMARY_DIALECT=ardupilotmega)

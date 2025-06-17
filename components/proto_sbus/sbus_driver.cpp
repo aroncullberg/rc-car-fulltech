@@ -170,7 +170,7 @@ void SbusDriver::processFrame(const uint8_t *frame, size_t length) {
 
     // if (ch == 0) printf("%4u: %4u\n", raw, scaled);
 
-    rc::Receiver::instance().update(static_cast<ChannelIndex>(ch), scaled);
+    rc::Backend::push(static_cast<ChannelIndex>(ch), scaled);
   }
 }
 

@@ -34,13 +34,12 @@ namespace proto
             gpio_num_t spi_sck{GPIO_NUM_NC};
             gpio_num_t spi_cs{GPIO_NUM_NC};
             int spi_clock_hz{4 * 1000 * 1000}; // 4 MHz
+            int spi_queue_len{1};
 
             gpio_num_t int_gpio{GPIO_NUM_NC};
 
             uint32_t task_stack{4096};
             uint8_t task_prio{5};
-            int queue_len{16};
-
             icm20948_accel_config_fs_sel_e accel_fsr{GPM_4}; // GPM_4 means 4g mapped to 32768 values (int16_t range)
             icm20948_gyro_config_1_fs_sel_e gyro_fsr{DPS_500}; // DPS_500 means 500 degrees per second mapped to 32768 values (uint16_t range)
         };
@@ -59,7 +58,7 @@ namespace proto
         void        IRAM_ATTR isr();
 
         static void task_entry(void *arg);
-        [[noreturn]] IRAM_ATTR void run();
+        [[noreturn]] void run();
 
         esp_err_t burst_read_agmt(icm20948_agmt_t& out);
 

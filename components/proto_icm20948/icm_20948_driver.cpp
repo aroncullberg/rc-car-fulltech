@@ -14,19 +14,22 @@
 using motion::Imu;
 using motion::Accel;
 using motion::Gyro;
+using motion::Temp;
 using namespace proto;
 
 static constexpr auto tag = "Icm20948Driver";
 
-constexpr static DRAM_ATTR int16_t kAccelBiasY =  -300;
-constexpr static DRAM_ATTR int16_t kAccelBiasZ =  +16600;
-constexpr static DRAM_ATTR int16_t kGyroBiasX =  -25;
-constexpr static DRAM_ATTR int16_t kGyroBiasY =  -50;
+constexpr static int16_t kAccelBiasY = -300;
+constexpr static int16_t kAccelBiasZ = +276;
+constexpr static int16_t kGyroBiasX = -25;
+constexpr static int16_t kGyroBiasY = -50;
 
-Icm20948Driver::Icm20948Driver(const Config &config) : cfg_(config) {
+Icm20948Driver::Icm20948Driver(const Config& config) : cfg_(config)
+{
 }
 
-esp_err_t Icm20948Driver::init() {
+esp_err_t Icm20948Driver::init()
+{
     ESP_LOGI(tag, "Initializing IMU on SPI bus (MISO:%d, MOSI:%d, SCK:%d, CS:%d)",
              cfg_.spi_miso, cfg_.spi_mosi,
              cfg_.spi_clock_hz, cfg_.spi_cs);
@@ -43,7 +46,8 @@ esp_err_t Icm20948Driver::init() {
     return ESP_OK;
 }
 
-esp_err_t Icm20948Driver::start() {
+esp_err_t Icm20948Driver::start()
+{
     if (task_) {
         return ESP_OK;
     }
@@ -69,7 +73,8 @@ esp_err_t Icm20948Driver::start() {
     return ESP_OK;
 }
 
-void Icm20948Driver::stop() {
+void Icm20948Driver::stop()
+{
     if (!task_) return;
 
     vTaskDelete(task_);
@@ -77,7 +82,8 @@ void Icm20948Driver::stop() {
     gpio_intr_disable(cfg_.int_gpio);
 }
 
-esp_err_t Icm20948Driver::configure_spi() {
+esp_err_t Icm20948Driver::configure_spi()
+{
     spi_bus_config_t spi_bus_config{};
     spi_bus_config.miso_io_num = cfg_.spi_miso;
     spi_bus_config.mosi_io_num = cfg_.spi_mosi;
@@ -90,17 +96,17 @@ esp_err_t Icm20948Driver::configure_spi() {
                         "Failed to initialize SPI bus");
 
     spi_device_interface_config_t device_interface_config{};
-        device_interface_config.command_bits = 0;
-        device_interface_config.address_bits = 0;
-        device_interface_config.dummy_bits = 0;
-        device_interface_config.mode = 0;
-        device_interface_config.duty_cycle_pos = 128;
-        device_interface_config.cs_ena_posttrans = 0;
-        device_interface_config.cs_ena_pretrans = 0;
-        device_interface_config.clock_speed_hz = cfg_.spi_clock_hz;
-        device_interface_config.spics_io_num = cfg_.spi_cs;
-        device_interface_config.flags = 0;
-        device_interface_config.queue_size = cfg_.queue_len;
+    device_interface_config.command_bits = 0;
+    device_interface_config.address_bits = 0;
+    device_interface_config.dummy_bits = 0;
+    device_interface_config.mode = 0;
+    device_interface_config.duty_cycle_pos = 128;
+    device_interface_config.cs_ena_posttrans = 0;
+    device_interface_config.cs_ena_pretrans = 0;
+    device_interface_config.clock_speed_hz = cfg_.spi_clock_hz;
+    device_interface_config.spics_io_num = cfg_.spi_cs;
+    device_interface_config.flags = 0;
+    device_interface_config.queue_size = cfg_.spi_queue_len;
     ESP_RETURN_ON_ERROR(spi_bus_add_device(cfg_.spi_host, &device_interface_config, &spi_), tag,
                         "Failed to add device");
 
@@ -108,7 +114,8 @@ esp_err_t Icm20948Driver::configure_spi() {
     return ESP_OK;
 }
 
-esp_err_t Icm20948Driver::configure_interrupt_pin() {
+esp_err_t Icm20948Driver::configure_interrupt_pin()
+{
     gpio_config_t io_cfg = {
         .pin_bit_mask = 1ULL << cfg_.int_gpio,
         .mode = GPIO_MODE_INPUT,
@@ -126,9 +133,7 @@ esp_err_t Icm20948Driver::configure_interrupt_pin() {
 
     ESP_RETURN_ON_ERROR(gpio_isr_handler_add(cfg_.int_gpio, isr_thunk, this), tag, "isr add");
 
-    gpio_intr_disable(cfg_.int_gpio);
-
-    icm20948_enable_fifo(&device_, true);
+    gpio_intr_disable(cfg_.int_gpio); // temporarly disable it, enabled again in start()
 
     icm20948_int_enable_t int_en{};
     int_en.RAW_DATA_0_RDY_EN = 1;
@@ -138,7 +143,8 @@ esp_err_t Icm20948Driver::configure_interrupt_pin() {
     return ESP_OK;
 }
 
-esp_err_t Icm20948Driver::configure_sensor() {
+esp_err_t Icm20948Driver::configure_sensor()
+{
     icm20948_sw_reset(&device_);
     vTaskDelay(pdMS_TO_TICKS(100));
 
@@ -155,9 +161,10 @@ esp_err_t Icm20948Driver::configure_sensor() {
 
     // fODR = 1125Hz / (DIV + 1) = 1125 / (3 + 1) = 281.25Hz
     icm20948_smplrt_t smplrt{};
-    smplrt.a = 2;
-    smplrt.g = 2;
-    icm20948_set_sample_rate(&device_, static_cast<icm20948_internal_sensor_id_bm>(ICM_20948_INTERNAL_ACC | ICM_20948_INTERNAL_GYR), smplrt);
+    smplrt.a = 0;
+    smplrt.g = 0;
+    icm20948_set_sample_rate(
+        &device_, static_cast<icm20948_internal_sensor_id_bm>(ICM_20948_INTERNAL_ACC | ICM_20948_INTERNAL_GYR), smplrt);
 
     icm20948_fss_t myfss{};
     myfss.a = cfg_.accel_fsr;
@@ -176,53 +183,121 @@ esp_err_t Icm20948Driver::configure_sensor() {
 }
 
 
-void Icm20948Driver::isr_thunk(void *arg) {
-    static_cast<Icm20948Driver *>(arg)->isr();
+void IRAM_ATTR Icm20948Driver::isr_thunk(void* arg)
+{
+    static_cast<Icm20948Driver*>(arg)->isr();
 }
 
-void Icm20948Driver::isr() {
+void IRAM_ATTR Icm20948Driver::isr()
+{
     const uint32_t token = esp_timer_get_time();
     BaseType_t x_higher_priority_task_woken = pdFALSE;
     xTaskNotifyFromISR(task_, token, eSetValueWithoutOverwrite, &x_higher_priority_task_woken);
-    if (x_higher_priority_task_woken) portYIELD_FROM_ISR();
+    if (x_higher_priority_task_woken)
+    portYIELD_FROM_ISR();
 }
 
-void Icm20948Driver::task_entry(void *arg) {
-    static_cast<Icm20948Driver *>(arg)->run();
+void Icm20948Driver::task_entry(void* arg)
+{
+    static_cast<Icm20948Driver*>(arg)->run();
 }
 
-[[noreturn]] void Icm20948Driver::run() {
+icm20948_status_e IRAM_ATTR icm20948_get_agmt_lågpris(icm20948_device_t* pdev, icm20948_agmt_t* pagmt);
+
+[[noreturn]] void Icm20948Driver::run()
+{
     uint32_t token;
 
     static uint64_t last_accel_us = 0;
-    static uint64_t last_gyro_us  = 0;
+    static uint64_t last_gyro_us = 0;
+    static uint32_t count = 0;
+
+    icm20948_status_e retval = ICM_20948_STAT_OK;
+    retval = static_cast<icm20948_status_e>(
+        static_cast<std::underlying_type_t<icm20948_status_e>>(retval)
+        | static_cast<std::underlying_type_t<icm20948_status_e>>(icm20948_set_bank(&device_, 0))
+    );
+
+    if (retval != ICM_20948_STAT_OK) {
+        ESP_LOGE(tag, "Failed to set bank 0, returning from task and will (attempt to) delete it");
+        vTaskDelete(task_);
+        return;
+    }
 
     for (;;) {
         xTaskNotifyWait(0, 0, &token, portMAX_DELAY);
 
-        icm20948_status_e st;
-        do {
-            icm20948_agmt_t agmt;
-            st = icm20948_get_agmt(&device_, &agmt);
-            if (st == ICM_20948_STAT_OK || st == ICM_20948_STAT_FIFO_MORE_DATA_AVAIL) {
-                Accel accel{};
-                accel.x = agmt.acc.axes.x * get_accel_scale() ;
-                accel.y = (agmt.acc.axes.y + kAccelBiasY) * get_accel_scale();
-                accel.z =( agmt.acc.axes.z + kAccelBiasZ) * get_accel_scale();
+        icm20948_agmt_t agmt;
+        icm20948_get_agmt_lågpris(&device_, &agmt);
+        Accel accel{};
+        accel.x = -agmt.acc.axes.x;
+        accel.y = -(agmt.acc.axes.y + kAccelBiasY);
+        accel.z = agmt.acc.axes.z + kAccelBiasZ;
+        accel.dt = token - last_accel_us;
+        last_accel_us = token;
 
-                accel.frequency = last_accel_us ? 1e6f / (token - last_accel_us) : 0.0f;
-                last_accel_us = token;
+        Imu::instance().update(accel);
 
-                Imu::instance().update(accel);
+        Gyro gyro{};
+        gyro.x = agmt.gyr.axes.x + kGyroBiasX;
+        gyro.y = agmt.gyr.axes.y + kGyroBiasY;
+        gyro.z = agmt.gyr.axes.z;
+        gyro.dt = token - last_gyro_us;
+        last_gyro_us = token;
+        Imu::instance().update(gyro);
 
-                Gyro gyro{};
-                gyro.x = (agmt.gyr.axes.x + kGyroBiasX)* get_gyro_scale();
-                gyro.y = (agmt.gyr.axes.y + kGyroBiasY) * get_gyro_scale();
-                gyro.z = agmt.gyr.axes.z* get_gyro_scale();
-                gyro.frequency = last_gyro_us ? 1e6f / (token - last_gyro_us) : 0.0f;
-                last_gyro_us = token;
-                Imu::instance().update(gyro);
-            }
-        } while (st == ICM_20948_STAT_FIFO_MORE_DATA_AVAIL);
+        Temp temp{};
+        // temp.celsius = (agmt.tmp.val - 25U) / 334U + 21U;
+        temp.celsius = agmt.tmp.val;
+
+        Imu::instance().update(temp);
     }
+}
+
+
+icm20948_status_e IRAM_ATTR icm20948_get_agmt_lågpris(icm20948_device_t* pdev, icm20948_agmt_t* pagmt)
+{
+    if (pagmt == nullptr) {
+        return ICM_20948_STAT_PARAM_ERR;
+    }
+
+    // static constexpr uint8_t numbytes = 14; // Accel, gyro, temp and 9 bytes of mag.
+    const uint8_t numbytes = 14 + 9; // Accel, gyro, temp and 9 bytes of mag.
+    uint8_t buff[numbytes];
+
+    // Error handling is for people who have time to spare
+    icm20948_execute_r(pdev, (uint8_t)AGB0_REG_ACCEL_XOUT_H, buff, numbytes);
+
+    pagmt->acc.axes.x = ((buff[0] << 8) | (buff[1] & 0xFF));
+    pagmt->acc.axes.y = ((buff[2] << 8) | (buff[3] & 0xFF));
+    pagmt->acc.axes.z = ((buff[4] << 8) | (buff[5] & 0xFF));
+
+    pagmt->gyr.axes.x = ((buff[6] << 8) | (buff[7] & 0xFF));
+    pagmt->gyr.axes.y = ((buff[8] << 8) | (buff[9] & 0xFF));
+    pagmt->gyr.axes.z = ((buff[10] << 8) | (buff[11] & 0xFF));
+
+    pagmt->tmp.val = ((buff[12] << 8) | (buff[13] & 0xFF));
+
+    pagmt->magStat1 = buff[14];
+    pagmt->mag.axes.x = ((buff[16] << 8) | (buff[15] & 0xFF)); //Mag data is read little endian
+    pagmt->mag.axes.y = ((buff[18] << 8) | (buff[17] & 0xFF));
+    pagmt->mag.axes.z = ((buff[20] << 8) | (buff[19] & 0xFF));
+    pagmt->magStat2 = buff[22];
+
+    // This is a trimmed version of the original function, for completness sake i will provide what i removde d here
+    /*
+     *retval |= icm20948_set_bank(pdev, 2);
+    icm20948_accel_config_t acfg;
+    retval |= icm20948_execute_r(pdev, (uint8_t)AGB2_REG_ACCEL_CONFIG, (uint8_t *)&acfg, 1 * sizeof(acfg));
+    pagmt->fss.a = acfg.ACCEL_FS_SEL; // Worth noting that without explicitly setting the FS range of the accelerometer it was showing the register value for +/- 2g but the reported values were actually scaled to the +/- 16g range
+    // Wait a minute... now it seems like this problem actually comes from the digital low-pass filter. When enabled the value is 1/8 what it should be...
+    retval |= icm20948_set_bank(pdev, 2);
+    icm20948_gyro_config_1_t gcfg1;
+    retval |= icm20948_execute_r(pdev, (uint8_t)AGB2_REG_GYRO_CONFIG_1, (uint8_t *)&gcfg1, 1 * sizeof(gcfg1));
+    pagmt->fss.g = gcfg1.GYRO_FS_SEL;
+    icm20948_accel_config_2_t acfg2;
+    retval |= icm20948_execute_r(pdev, (uint8_t)AGB2_REG_ACCEL_CONFIG_2, (uint8_t *)&acfg2, 1 * sizeof(acfg2));
+    */
+
+    return ICM_20948_STAT_OK;
 }

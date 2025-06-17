@@ -17,12 +17,10 @@ if(NOT DEFINED ENV{SDKCONFIG})
   set(ENV{SDKCONFIG} ${CMAKE_SOURCE_DIR}/sdkconfig.vehicle)
 endif()
 
-set(EXTRA_COMPONENT_DIRS
-        ${CMAKE_SOURCE_DIR}/components/proto_icm20948
-        ${CMAKE_SOURCE_DIR}/components/proto_icm20948/cr-icm20948
-        ${CMAKE_SOURCE_DIR}/components/proto_nmea
-        ${CMAKE_SOURCE_DIR}/components/proto_nmea/tinygps-espidf
-)
+#set(EXTRA_COMPONENT_DIRS
+# ...
+# ...
+#)
 
 include(
         $ENV{IDF_PATH}/tools/cmake/project.cmake

@@ -1,0 +1,88 @@
+#include <esp_console.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_log.h"
+#include <stdio.h>
+
+#include <rom/ets_sys.h>
+
+#include "esp_vfs.h"
+
+
+#include <sys/param.h>
+#include <sys/socket.h>
+
+#include "esp-libtelnet.h"
+
+#ifndef TAG
+#define TAG "main"
+#endif
+
+extern "C" {
+    #include "ESP_CRSF.h"
+}
+#include <string.h>
+#include <driver/uart.h>
+#include <hal/uart_types.h>
+#include <soc/gpio_num.h>25
+
+extern "C" void vApplicationStackOverflowHook(TaskHandle_t t, char* name)
+{
+    ets_printf("\n*** STACK OVERFLOW: %s ***\n", name);
+    abort(); // or esp_restart();
+}
+
+
+extern "C" void app_main(void)
+{
+    const uart_port_t uart_num = UART_NUM_1;
+    int rx_pin = 18;
+    int tx_pin = 17;
+
+    crsf_config_t config = {
+        .uart_num = UART_NUM_1,
+        .tx_pin = 17,
+        .rx_pin = 18
+    };
+    CRSF_init(&config);
+
+    crsf_channels_t channels{};
+    crsf_battery_t battery{};
+    crsf_gps_t gps{};
+    crsf_rpm_t rpm{};
+    crsf_esp_now_t debug{};
+
+    while (1) {
+        CRSF_receive_channels(&channels);
+        printf("[%4d %4d %4d %4d]\n", channels.ch1, channels.ch2, channels.ch3, channels.ch4);
+
+        battery.voltage = 120; // 10 * v i.e 12V
+        battery.current = 100;
+        battery.capacity = 100;
+        battery.remaining = 66;
+        CRSF_send_battery_data(CRSF_DEST_FC, &battery);
+
+        gps.latitude = 59391683;
+        gps.longitude = 13542904;
+        gps.groundspeed = 100 + (esp_random() % 20);
+        gps.altitude = 1000;
+        gps.satellites =  12;
+        CRSF_send_gps_data(CRSF_DEST_FC, &gps);
+
+        int32_t latitude; // degree / 10,000,000 big endian
+        int32_t longitude; // degree / 10,000,000 big endian
+        uint16_t groundspeed; // km/h / 10 big endian
+        uint16_t heading; // GPS heading, degree/100 big endian
+        uint16_t altitude; // meters, +1000m big endian
+        uint8_t satellites; // satellites
+
+        rpm.rpm_source_id = 1;
+        rpm.rpm_value[0] = 18200;
+        rpm.rpm_value[1] = 18250;
+        rpm.rpm_value[2] = 18280;
+        CRSF_send_rpm(CRSF_DEST_FC, &rpm, 3);
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
